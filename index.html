@@ -52,6 +52,13 @@
     border-radius:8px; margin-bottom:6px; cursor:pointer; background:var(--surface-2);}
   .cbox{flex-shrink:0; width:18px; height:18px; border-radius:4px; display:flex; align-items:center;
     justify-content:center; margin-top:1px; border:1.5px solid var(--border-strong);}
+  .rthumb{flex-shrink:0; width:48px; height:48px; border-radius:6px; object-fit:cover; background:var(--surface-1);}
+  .popup-photo{width:100%; height:120px; object-fit:cover; border-radius:6px; margin-bottom:6px; display:block;}
+  .obadge{font-size:11px; font-weight:500; display:inline-flex; align-items:center; gap:4px;}
+  .obadge .dot{width:6px; height:6px; border-radius:50%; background:currentColor; display:inline-block; flex-shrink:0;}
+  .obadge.open{color:var(--pub-green-light);}
+  .obadge.closed{color:var(--pub-red);}
+  .obadge.unknown{color:var(--text-muted);}
   .rname{font-size:14px; font-weight:500; color:var(--text-primary);}
   .rdesc{font-size:12px; color:var(--text-muted); line-height:1.45; margin-top:2px;}
   .done .rname{text-decoration:line-through; opacity:0.6;}
@@ -117,56 +124,56 @@
   const places = [
     {n:"The Morrison Hotel", c:"hotel", lat:53.3466514, lng:-6.2659595, d:"Your hotel Sun–Tue, on the north quays.", url:'https://www.hilton.com/en/hotels/dubtmqq-the-morrison-dublin/'},
     {n:"Temple Bar Hotel", c:"hotel", lat:53.3458972, lng:-6.2603319, d:"Your final night, in the heart of Temple Bar.", url:'https://www.discoverasr.com/others/ireland/temple-bar-hotel-dublin'},
-    {n:"Guinness Storehouse", c:"planned", lat:53.3418088, lng:-6.2867156, d:"Mon 7/13 tour. ~20 min walk west. Book a slot; Gravity Bar view up top.", url:'https://www.guinness-storehouse.com/en/home'},
-    {n:"Gallaghers Boxty House", c:"planned", lat:53.3457278, lng:-6.2621719, d:"Mon 7/13 dinner. Traditional boxty in Temple Bar.", url:'http://www.boxtyhouse.ie/'},
-    {n:"Urban Brewing", c:"planned", lat:53.3491519, lng:-6.2482294, d:"Sat 7/18 dinner. Brewery + restaurant at CHQ, ~15 min walk east.", url:'https://www.urbanbrewing.ie/'},
-    {n:"Bar Pez", c:"food", lat:53.3375177, lng:-6.2667194, d:"Tiny Portobello small-plates + wine. Book ahead. Anchovy & scallop toast.", url:'http://barpez.ie/'},
-    {n:"Bambino Pizza", c:"food", lat:53.3411594, lng:-6.2635421, d:"NY-style slices. ~30 min queue but moves fast.", url:'http://www.bambino.ie/'},
-    {n:"The Winding Stair", c:"food", lat:53.3466667, lng:-6.2636111, d:"My pick. Modern-Irish above a bookshop, Ha'penny Bridge views. Book.", url:'http://www.winding-stair.com/'},
-    {n:"Fallon & Byrne", c:"food", lat:53.343151, lng:-6.263287, d:"My pick. Upscale dining room over a food hall.", url:'https://www.fallonandbyrne.com/our-restaurants/the-dining-room/'},
-    {n:"Loose Canon", c:"food", lat:53.3425249, lng:-6.2633229, d:"Natural wine + toasties + cheese on pedestrian Drury St.", url:'https://www.loosecanon.ie/'},
-    {n:"Cookieboy", c:"coffee", lat:53.3413517, lng:-6.2650434, d:"Molten-centre cookies + great coffee. 4.9★. Closes ~5pm.", url:'https://cookieboy.ie/'},
-    {n:"Mister Magpie Coffee", c:"coffee", lat:53.335928, lng:-6.2571568, d:"Excellent coffee, Bread 41 pastries, open weekends. Closes 4:30pm.", url:'https://maps.google.com/?cid=5320124491606783505'},
-    {n:"Copper + Straw", c:"coffee", lat:53.3466003, lng:-6.2600753, d:"4.8★. Cosy Aston Quay spot, 2 min from both hotels. Great cold brew + breakfast sandwiches. Closes 4pm.", url:'http://copperandstraw.ie/'},
-    {n:"Twist Bakery", c:"coffee", lat:53.3460182, lng:-6.2619351, d:"4.9★. Tiny vegan-friendly bakery, knockout pistachio croissants. Limited seating. Closes 3:30pm.", url:'https://www.twistbakerydublin.com/'},
-    {n:"MANTLE", c:"coffee", lat:53.3452253, lng:-6.2618935, d:"4.9★. Coffee-nerd pick — pour-overs & single-origin espresso. Closed Mon & Tue. Closes 4:30pm.", url:'https://www.mantle.coffee/'},
-    {n:"Rumi Café", c:"coffee", lat:53.3445664, lng:-6.2690674, d:"4.9★. West edge of Temple Bar. Open until 7pm — rare late option. Warm service.", url:'https://maps.google.com/?cid=3927333939365632243'},
-    {n:"Brew Lab", c:"coffee", lat:53.3381631, lng:-6.2662471, d:"4.8★, 1,000+ reviews. Competitive-barista pedigree, among the city's best. ~8 min south. Closes 4:30pm.", url:'https://www.instagram.com/brewlabdublin/'},
-    {n:"All Rosey Coffee", c:"coffee", lat:53.3406045, lng:-6.2631725, d:"4.8★. Stylish King St South takeaway, great flat whites + fresh brigadeiros. Closes 5pm.", url:'https://maps.google.com/?cid=14055358899574233487'},
-    {n:"Creed Coffee Roasters", c:"coffee", lat:53.3433830, lng:-6.2448862, d:"4.9★. Roasts its own, €1.50 espresso. ~8 min east on Pearse St. Closes 4pm.", url:'https://creedcoffeeroasters.ie/'},
-    {n:"Shoe Lane Coffee", c:"coffee", lat:53.3471635, lng:-6.2552878, d:"4.7★, 1,200+ reviews. Converted cobbler's shop near Tara St, many call it Dublin's best. Open to 6:30pm.", url:'http://www.shoelanecoffee.ie/'},
-    {n:"Boom Coffee Roasters", c:"coffee", lat:53.3418217, lng:-6.274934, d:"4.9★. Lovely Liberties spot — hit it on the way to/from Guinness. Closes 4pm.", url:'https://maps.google.com/?cid=3643800673360486266'},
-    {n:"O'Donoghues Bar", c:"pub", lat:53.3382083, lng:-6.2542292, d:"Legendary trad-music pub (the Dubliners started here). Near Stephen's Green.", url:'https://www.odonoghues.ie/'},
-    {n:"The Brazen Head", c:"pub", lat:53.3449326, lng:-6.2763323, d:"Ireland's oldest pub (1198). Food + live music, ~8 min west.", url:'http://www.brazenhead.com/'},
-    {n:"The Long Hall", c:"pub", lat:53.3418349, lng:-6.2652064, d:"Gorgeous Victorian pub, crimson ceiling. Great Guinness & whiskey.", url:'https://www.instagram.com/thelonghalldublin/'},
-    {n:"Darkey Kelly's", c:"pub", lat:53.3439551, lng:-6.2699449, d:"Lively, nightly live music, Guinness stew. By Christ Church.", url:'http://darkeykellys.ie/'},
-    {n:"The Cobblestone", c:"pub", lat:53.3498083, lng:-6.2778361, d:"The real deal for trad music. Smithfield, ~12 min. Locals' favourite.", url:'http://cobblestonepub.ie/'},
-    {n:"The Swan Bar", c:"pub", lat:53.3396583, lng:-6.2656855, d:"130-yr-old family Victorian pub. Great Irish coffee. Near Stephen's Green.", url:'http://theswanbar.com/'},
-    {n:"Kehoes Pub", c:"pub", lat:53.3411639, lng:-6.2594277, d:"200-yr-old pub, cozy snugs, top Guinness pour. Off Grafton St.", url:'http://kehoesdublin.ie/'},
-    {n:"Grogan's", c:"pub", lat:53.3422396, lng:-6.2626181, d:"My pick. Iconic old-school pub, famous toastie + artsy crowd.", url:'http://www.groganspub.ie/'},
-    {n:"Mulligan's", c:"pub", lat:53.3468861, lng:-6.2554264, d:"My pick. Many locals' best-Guinness vote. Just outside Temple Bar.", url:'https://www.facebook.com/profile.php?id=100064593853632'},
-    {n:"The Hairy Lemon", c:"pub", lat:53.341233, lng:-6.2637511, d:"My pick. Characterful pub, hearty stew + live music.", url:'https://thehairylemon.ie/'},
-    {n:"Book of Kells & Long Room", c:"sight", lat:53.343888, lng:-6.2567554, d:"My pick. 9th-c. manuscript + stunning library. Book a slot. ~7 min.", url:'https://bookofkellsexperience.ie/'},
-    {n:"Dublin Castle", c:"sight", lat:53.3428861, lng:-6.2674284, d:"My pick. 13th-c. castle + Georgian state rooms. Grounds free. 5 min.", url:'https://dublincastle.ie/'},
-    {n:"Chapters Bookstore", c:"shop", lat:53.3515089, lng:-6.2639632, d:"My pick. Ireland's largest independent bookshop + café. ~8 min north.", url:'http://chaptersbookstore.com/'},
-    {n:"Nine Crows Vintage", c:"shop", lat:53.3447852, lng:-6.2641723, d:"Curated vintage clothing + photobooth. In Temple Bar.", url:'http://www.shopninecrows.com/'},
-    {n:"Irish Design Shop", c:"shop", lat:53.3427432, lng:-6.2629527, d:"4.6★. Two floors of Irish-made ceramics, jewellery, prints & woollens. Drury St. Closes 6pm.", url:'http://irishdesignshop.com/'},
-    {n:"Om Diva", c:"shop", lat:53.3423913, lng:-6.2633902, d:"4.8★. Beautifully curated boutique — handmade Irish accessories, jewellery, quirky outfits. Cash-friendly. Drury St.", url:'http://www.omdivaboutique.com/'},
-    {n:"Indigo & Cloth", c:"shop", lat:53.3452013, lng:-6.2661415, d:"4.8★. Stylish 3-floor menswear/homeware concept store with a great coffee bar downstairs. Temple Bar.", url:'http://www.indigoandcloth.com/'},
-    {n:"Jam Art Factory", c:"shop", lat:53.345149, lng:-6.2628761, d:"4.6★. Prints & design by local independent artists — affordable, unique souvenirs. Crown Alley, Temple Bar.", url:'https://jamartfactory.com/'},
-    {n:"designist", c:"shop", lat:53.3426386, lng:-6.2646535, d:"4.6★. Fun gadgets, gifts, stationery & Irish design on George's St. Closes 6pm.", url:'http://www.designist.ie/'},
-    {n:"Unique Crafts & Design", c:"shop", lat:53.3424684, lng:-6.2635862, d:"4.8★. Handmade ceramics, jewellery & art in George's Street Arcade — artist-run.", url:'http://www.uniqueshop.ie/'},
-    {n:"Design Lane", c:"shop", lat:53.3446612, lng:-6.2684912, d:"4.4★. Sweet little shop of Irish prints, candles, clothes & books. West Temple Bar.", url:'https://designlane.ie/'},
-    {n:"The Secret Book & Record Store", c:"shop", lat:53.3430691, lng:-6.2610993, d:"4.7★. Quirky hidden gem — used books, vinyl & curiosities on Wicklow St.", url:'https://www.thesecretbookstore.ie/'},
-    {n:"Spindizzy Records", c:"shop", lat:53.3425126, lng:-6.2639295, d:"4.6★. Beloved independent record shop in the Market Arcade off George's St.", url:'https://spindizzyrecords.com/'},
-    {n:"Kilmainham Gaol", c:"sight", lat:53.3418701, lng:-6.3098048, d:"4.7★. The emotional heart of Ireland's independence story — moving guided tour. BOOK WEEKS AHEAD, sells out. ~35 min walk / short taxi west.", url:'https://www.kilmainhamgaolmuseum.ie/'},
-    {n:"Christ Church Cathedral", c:"sight", lat:53.3435130, lng:-6.2710602, d:"4.5★. Stunning medieval cathedral with a historic crypt. ~7 min walk from Temple Bar.", url:'https://christchurchcathedral.ie/'},
-    {n:"St Patrick's Cathedral", c:"sight", lat:53.3395154, lng:-6.2714767, d:"4.5★. Ireland's largest church, gorgeous Gothic architecture. ~12 min walk south.", url:'https://www.stpatrickscathedral.ie/'},
-    {n:"EPIC Emigration Museum", c:"sight", lat:53.3483124, lng:-6.2481792, d:"4.6★. Often voted Europe's top attraction — far better than it sounds. Right next to Urban Brewing; pair with Sat dinner.", url:'https://epicchq.com/'},
-    {n:"Poolbeg Lighthouse", c:"nature", lat:53.3421383, lng:-6.1512796, d:"4.7★. ~4km flat walk out into Dublin Bay to a red lighthouse — panoramic skyline + sunset views. Drive/taxi (~20 min); no shops, bring water.", url:'https://www.dublinport.ie/'},
-    {n:"Howth", c:"nature", lat:53.3890036, lng:-6.0741398, d:"4.5★. Seaside village + cliff walk + seafood. ~30 min DART. Your saved coffee spots (Bailey Brew, Bodega) are here. Classic half-day escape.", url:'https://www.irishrail.ie/en-ie/station/howth'},
-    {n:"Phoenix Park", c:"nature", lat:53.3490364, lng:-6.303101, d:"4.6★. Europe's largest walled park — wild deer, Wellington Monument. Next to the Guinness Storehouse; easy to pair on Monday.", url:'https://maps.google.com/?cid=8617691855706575297'},
-    {n:"St Stephen's Green", c:"nature", lat:53.3381736, lng:-6.259119, d:"4.7★. Beautiful central park just off Grafton St — the easiest green breather between stops.", url:'http://ststephensgreenpark.ie/'}
+    {n:"Guinness Storehouse", c:"planned", lat:53.3418088, lng:-6.2867156, d:"Mon 7/13 tour. ~20 min walk west. Book a slot; Gravity Bar view up top.", url:'https://www.guinness-storehouse.com/en/home', img:{file:'Guinness_Storehouse.JPG', credit:'Greatal386, CC BY-SA 3.0'}, hours:{mon:'10:00-19:00',tue:'10:00-19:00',wed:'10:00-19:00',thu:'10:00-19:00',fri:'10:00-19:00',sat:'09:30-20:00',sun:'10:00-19:00'}},
+    {n:"Gallaghers Boxty House", c:"planned", lat:53.3457278, lng:-6.2621719, d:"Mon 7/13 dinner. Traditional boxty in Temple Bar.", url:'http://www.boxtyhouse.ie/', hours:{mon:'09:00-22:00',tue:'09:00-22:00',wed:'09:00-22:00',thu:'09:00-22:00',fri:'09:00-22:00',sat:'09:00-22:00',sun:'10:00-22:00'}},
+    {n:"Urban Brewing", c:"planned", lat:53.3491519, lng:-6.2482294, d:"Sat 7/18 dinner. Brewery + restaurant at CHQ, ~15 min walk east.", url:'https://www.urbanbrewing.ie/', hours:{mon:'closed',tue:'12:00-23:00',wed:'12:00-23:00',thu:'12:00-23:00',fri:'12:00-23:00',sat:'12:30-23:00',sun:'12:30-23:00'}},
+    {n:"Bar Pez", c:"food", lat:53.3375177, lng:-6.2667194, d:"Tiny Portobello small-plates + wine. Book ahead. Anchovy & scallop toast.", url:'http://barpez.ie/', hours:{mon:'17:00-22:00',tue:'17:00-22:00',wed:'17:00-22:00',thu:'15:00-22:00',fri:'15:00-22:00',sat:'15:00-22:00',sun:'15:00-22:00'}},
+    {n:"Bambino Pizza", c:"food", lat:53.3411594, lng:-6.2635421, d:"NY-style slices. ~30 min queue but moves fast.", url:'http://www.bambino.ie/', hours:{mon:'12:00-23:00',tue:'12:00-23:00',wed:'12:00-23:00',thu:'12:00-23:00',fri:'12:00-01:00',sat:'12:00-01:00',sun:'12:00-23:00'}},
+    {n:"The Winding Stair", c:"food", lat:53.3466667, lng:-6.2636111, d:"My pick. Modern-Irish above a bookshop, Ha'penny Bridge views. Book.", url:'http://www.winding-stair.com/', hours:{mon:'17:30-21:00',tue:'17:30-21:00',wed:'12:00-15:00,17:30-21:00',thu:'12:00-15:00,17:30-22:00',fri:'12:00-15:00,17:30-22:00',sat:'12:00-15:00,17:30-22:00',sun:'12:00-15:00,17:30-21:00'}},
+    {n:"Fallon & Byrne", c:"food", lat:53.343151, lng:-6.263287, d:"My pick. Upscale dining room over a food hall.", url:'https://www.fallonandbyrne.com/our-restaurants/the-dining-room/', hours:{mon:'12:00-15:00,17:00-21:00',tue:'12:00-15:00,17:00-21:00',wed:'12:00-15:00,17:00-21:30',thu:'12:00-15:00,17:00-21:30',fri:'12:00-15:00,17:00-22:00',sat:'12:00-15:00,17:00-22:00',sun:'12:00-20:00'}},
+    {n:"Loose Canon", c:"food", lat:53.3425249, lng:-6.2633229, d:"Natural wine + toasties + cheese on pedestrian Drury St.", url:'https://www.loosecanon.ie/', hours:{mon:'11:00-22:30',tue:'11:00-22:30',wed:'11:00-23:30',thu:'11:00-23:30',fri:'11:00-23:30',sat:'11:00-23:30',sun:'12:30-22:30'}},
+    {n:"Cookieboy", c:"coffee", lat:53.3413517, lng:-6.2650434, d:"Molten-centre cookies + great coffee. 4.9★. Closes ~5pm.", url:'https://cookieboy.ie/', hours:{mon:'08:00-17:00',tue:'08:00-17:00',wed:'08:00-17:00',thu:'08:00-17:00',fri:'08:00-17:00',sat:'09:00-18:00',sun:'10:00-17:00'}},
+    {n:"Mister Magpie Coffee", c:"coffee", lat:53.335928, lng:-6.2571568, d:"Excellent coffee, Bread 41 pastries, open weekends. Closes 4:30pm.", url:'https://maps.google.com/?cid=5320124491606783505', hours:{mon:'06:30-16:30',tue:'07:00-16:30',wed:'07:00-16:30',thu:'07:00-16:30',fri:'07:00-16:30',sat:'09:00-15:00',sun:'08:00-16:30'}},
+    {n:"Copper + Straw", c:"coffee", lat:53.3466003, lng:-6.2600753, d:"4.8★. Cosy Aston Quay spot, 2 min from both hotels. Great cold brew + breakfast sandwiches. Closes 4pm.", url:'http://copperandstraw.ie/', hours:{mon:'07:30-16:00',tue:'07:30-16:00',wed:'07:30-16:00',thu:'07:30-16:00',fri:'07:30-16:00',sat:'09:00-16:00',sun:'09:00-16:00'}},
+    {n:"Twist Bakery", c:"coffee", lat:53.3460182, lng:-6.2619351, d:"4.9★. Tiny vegan-friendly bakery, knockout pistachio croissants. Limited seating. Closes 3:30pm.", url:'https://www.twistbakerydublin.com/', hours:{mon:'06:30-15:30',tue:'06:30-15:30',wed:'06:30-15:30',thu:'06:30-15:30',fri:'06:30-15:30',sat:'08:00-16:00',sun:'08:00-16:00'}},
+    {n:"MANTLE", c:"coffee", lat:53.3452253, lng:-6.2618935, d:"4.9★. Coffee-nerd pick — pour-overs & single-origin espresso. Closed Mon & Tue. Closes 4:30pm.", url:'https://www.mantle.coffee/', hours:{mon:'closed',tue:'closed',wed:'08:30-16:30',thu:'08:30-16:30',fri:'08:30-16:30',sat:'09:30-16:30',sun:'10:00-16:30'}},
+    {n:"Rumi Café", c:"coffee", lat:53.3445664, lng:-6.2690674, d:"4.9★. West edge of Temple Bar. Open until 7pm — rare late option. Warm service.", url:'https://maps.google.com/?cid=3927333939365632243', hours:{mon:'07:00-19:00',tue:'07:00-19:00',wed:'07:00-19:00',thu:'07:00-19:00',fri:'07:00-19:00',sat:'07:00-19:00',sun:'08:00-18:00'}},
+    {n:"Brew Lab", c:"coffee", lat:53.3381631, lng:-6.2662471, d:"4.8★, 1,000+ reviews. Competitive-barista pedigree, among the city's best. ~8 min south. Closes 4:30pm.", url:'https://www.instagram.com/brewlabdublin/', hours:{mon:'07:30-16:30',tue:'07:30-16:30',wed:'07:30-16:30',thu:'07:30-16:30',fri:'07:30-16:30',sat:'08:00-17:00',sun:'09:00-16:00'}},
+    {n:"All Rosey Coffee", c:"coffee", lat:53.3406045, lng:-6.2631725, d:"4.8★. Stylish King St South takeaway, great flat whites + fresh brigadeiros. Closes 5pm.", url:'https://maps.google.com/?cid=14055358899574233487', hours:{mon:'07:30-17:00',tue:'07:30-17:00',wed:'07:30-17:00',thu:'07:30-17:00',fri:'07:30-17:00',sat:'08:30-17:00',sun:'09:30-17:00'}},
+    {n:"Creed Coffee Roasters", c:"coffee", lat:53.3433830, lng:-6.2448862, d:"4.9★. Roasts its own, €1.50 espresso. ~8 min east on Pearse St. Closes 4pm.", url:'https://creedcoffeeroasters.ie/', hours:{mon:'07:30-16:00',tue:'07:30-16:00',wed:'07:30-16:00',thu:'07:30-16:00',fri:'07:30-16:00',sat:'09:00-15:00',sun:'09:00-15:00'}},
+    {n:"Shoe Lane Coffee", c:"coffee", lat:53.3471635, lng:-6.2552878, d:"4.7★, 1,200+ reviews. Converted cobbler's shop near Tara St, many call it Dublin's best. Open to 6:30pm.", url:'http://www.shoelanecoffee.ie/', hours:{mon:'06:30-18:30',tue:'06:30-18:30',wed:'06:30-18:30',thu:'06:30-18:30',fri:'06:30-18:30',sat:'08:00-18:30',sun:'08:00-18:30'}},
+    {n:"Boom Coffee Roasters", c:"coffee", lat:53.3418217, lng:-6.274934, d:"4.9★. Lovely Liberties spot — hit it on the way to/from Guinness. Closes 4pm.", url:'https://maps.google.com/?cid=3643800673360486266', hours:{mon:'07:30-16:00',tue:'07:30-16:00',wed:'07:30-16:00',thu:'07:30-16:00',fri:'07:30-16:00',sat:'09:00-16:00',sun:'09:00-16:00'}},
+    {n:"O'Donoghues Bar", c:"pub", lat:53.3382083, lng:-6.2542292, d:"Legendary trad-music pub (the Dubliners started here). Near Stephen's Green.", url:'https://www.odonoghues.ie/', hours:{mon:'10:30-23:30',tue:'10:30-23:30',wed:'10:30-23:30',thu:'10:30-23:30',fri:'10:30-00:30',sat:'10:30-00:30',sun:'12:30-23:00'}},
+    {n:"The Brazen Head", c:"pub", lat:53.3449326, lng:-6.2763323, d:"Ireland's oldest pub (1198). Food + live music, ~8 min west.", url:'http://www.brazenhead.com/', hours:{mon:'12:00-23:30',tue:'12:00-23:30',wed:'12:00-23:30',thu:'12:00-00:30',fri:'12:00-00:30',sat:'12:00-00:30',sun:'12:00-23:00'}},
+    {n:"The Long Hall", c:"pub", lat:53.3418349, lng:-6.2652064, d:"Gorgeous Victorian pub, crimson ceiling. Great Guinness & whiskey.", url:'https://www.instagram.com/thelonghalldublin/', hours:{mon:'16:00-23:30',tue:'16:00-23:30',wed:'16:00-23:30',thu:'13:00-23:30',fri:'13:00-00:30',sat:'13:00-00:30',sun:'15:00-23:00'}},
+    {n:"Darkey Kelly's", c:"pub", lat:53.3439551, lng:-6.2699449, d:"Lively, nightly live music, Guinness stew. By Christ Church.", url:'http://darkeykellys.ie/', hours:{mon:'11:30-23:30',tue:'11:30-23:30',wed:'11:30-23:30',thu:'11:30-23:30',fri:'11:30-00:30',sat:'11:30-00:30',sun:'12:30-23:00'}},
+    {n:"The Cobblestone", c:"pub", lat:53.3498083, lng:-6.2778361, d:"The real deal for trad music. Smithfield, ~12 min. Locals' favourite.", url:'http://cobblestonepub.ie/', hours:{mon:'16:00-23:30',tue:'16:00-23:30',wed:'16:00-23:30',thu:'16:00-23:30',fri:'14:00-00:30',sat:'14:00-00:30',sun:'13:00-23:00'}},
+    {n:"The Swan Bar", c:"pub", lat:53.3396583, lng:-6.2656855, d:"130-yr-old family Victorian pub. Great Irish coffee. Near Stephen's Green.", url:'http://theswanbar.com/', hours:{mon:'11:00-23:30',tue:'11:00-23:30',wed:'11:00-23:30',thu:'11:00-23:30',fri:'11:00-00:30',sat:'11:00-00:30',sun:'11:00-23:00'}},
+    {n:"Kehoes Pub", c:"pub", lat:53.3411639, lng:-6.2594277, d:"200-yr-old pub, cozy snugs, top Guinness pour. Off Grafton St.", url:'http://kehoesdublin.ie/', hours:{mon:'10:30-23:30',tue:'10:30-23:30',wed:'10:30-23:30',thu:'10:30-23:30',fri:'10:30-00:30',sat:'10:30-00:30',sun:'11:30-23:00'}},
+    {n:"Grogan's", c:"pub", lat:53.3422396, lng:-6.2626181, d:"My pick. Iconic old-school pub, famous toastie + artsy crowd.", url:'http://www.groganspub.ie/', hours:{mon:'10:30-23:30',tue:'10:30-23:30',wed:'10:30-23:30',thu:'10:30-23:30',fri:'10:30-00:30',sat:'10:30-00:30',sun:'12:30-23:00'}},
+    {n:"Mulligan's", c:"pub", lat:53.3468861, lng:-6.2554264, d:"My pick. Many locals' best-Guinness vote. Just outside Temple Bar.", url:'https://www.facebook.com/profile.php?id=100064593853632', hours:{mon:'10:00-23:30',tue:'10:00-23:30',wed:'10:00-23:30',thu:'10:00-23:30',fri:'10:00-00:30',sat:'10:00-00:30',sun:'12:30-23:00'}},
+    {n:"The Hairy Lemon", c:"pub", lat:53.341233, lng:-6.2637511, d:"My pick. Characterful pub, hearty stew + live music.", url:'https://thehairylemon.ie/', hours:{mon:'10:00-23:30',tue:'10:00-23:30',wed:'10:00-23:30',thu:'10:00-23:30',fri:'10:00-01:30',sat:'10:00-01:30',sun:'10:00-23:00'}},
+    {n:"Book of Kells & Long Room", c:"sight", lat:53.343888, lng:-6.2567554, d:"My pick. 9th-c. manuscript + stunning library. Book a slot. ~7 min. Note: Long Room under conservation works through 2027, much of the book collection removed.", url:'https://bookofkellsexperience.ie/', img:{file:'Long Room Interior, Trinity College Dublin, Ireland - Diliff.jpg', credit:'Diliff, CC BY-SA 4.0'}, hours:{mon:'09:00-18:00',tue:'09:00-18:00',wed:'09:00-18:00',thu:'09:00-18:00',fri:'09:00-18:00',sat:'09:00-18:00',sun:'09:30-17:00'}},
+    {n:"Dublin Castle", c:"sight", lat:53.3428861, lng:-6.2674284, d:"⚠️ CLOSED to the public 5 May 2026 – Jan 2027 (EU Council Presidency hosting, confirmed on dublincastle.ie). Not visitable during this trip.", url:'https://dublincastle.ie/', img:{file:'(Ireland) Dublin Castle Up Yard.JPG', credit:'Donaldytong, CC BY-SA 3.0'}, hours:{mon:'closed',tue:'closed',wed:'closed',thu:'closed',fri:'closed',sat:'closed',sun:'closed'}},
+    {n:"Chapters Bookstore", c:"shop", lat:53.3515089, lng:-6.2639632, d:"My pick. Ireland's largest independent bookshop + café. ~8 min north.", url:'http://chaptersbookstore.com/', hours:{mon:'09:30-18:30',tue:'09:30-18:30',wed:'09:30-18:30',thu:'09:30-20:00',fri:'09:30-18:30',sat:'09:30-18:30',sun:'12:00-18:30'}},
+    {n:"Nine Crows Vintage", c:"shop", lat:53.3447852, lng:-6.2641723, d:"Curated vintage clothing + photobooth. In Temple Bar.", url:'http://www.shopninecrows.com/', hours:{mon:'12:00-18:00',tue:'11:00-18:00',wed:'11:00-18:00',thu:'11:00-19:00',fri:'11:00-19:00',sat:'11:00-19:00',sun:'12:00-18:00'}},
+    {n:"Irish Design Shop", c:"shop", lat:53.3427432, lng:-6.2629527, d:"4.6★. Two floors of Irish-made ceramics, jewellery, prints & woollens. Drury St. Closes 6pm.", url:'http://irishdesignshop.com/', hours:{mon:'10:00-18:00',tue:'10:00-18:00',wed:'10:00-18:00',thu:'10:00-18:00',fri:'10:00-18:00',sat:'10:00-18:00',sun:'12:00-17:00'}},
+    {n:"Om Diva", c:"shop", lat:53.3423913, lng:-6.2633902, d:"4.8★. Beautifully curated boutique — handmade Irish accessories, jewellery, quirky outfits. Cash-friendly. Drury St.", url:'http://www.omdivaboutique.com/', hours:{mon:'10:00-18:30',tue:'10:00-18:30',wed:'10:00-18:30',thu:'10:00-19:30',fri:'10:00-18:30',sat:'10:00-18:30',sun:'12:00-18:00'}},
+    {n:"Indigo & Cloth", c:"shop", lat:53.3452013, lng:-6.2661415, d:"4.8★. Stylish 3-floor menswear/homeware concept store with a great coffee bar downstairs. Temple Bar.", url:'http://www.indigoandcloth.com/', hours:{mon:'10:00-18:00',tue:'10:00-18:00',wed:'10:00-18:00',thu:'10:00-18:00',fri:'10:00-18:00',sat:'10:00-18:00',sun:'unknown'}},
+    {n:"Jam Art Factory", c:"shop", lat:53.345149, lng:-6.2628761, d:"4.6★. Prints & design by local independent artists — affordable, unique souvenirs. Crown Alley, Temple Bar.", url:'https://jamartfactory.com/', hours:{mon:'10:00-18:00',tue:'10:00-18:00',wed:'10:00-18:00',thu:'10:00-18:00',fri:'10:00-18:00',sat:'10:00-18:00',sun:'10:00-18:00'}},
+    {n:"designist", c:"shop", lat:53.3426386, lng:-6.2646535, d:"4.6★. Fun gadgets, gifts, stationery & Irish design on George's St. Closes 6pm.", url:'http://www.designist.ie/', hours:{mon:'10:00-18:00',tue:'10:00-18:00',wed:'10:00-18:00',thu:'10:00-18:00',fri:'10:00-18:00',sat:'10:00-18:00',sun:'12:00-17:30'}},
+    {n:"Unique Crafts & Design", c:"shop", lat:53.3424684, lng:-6.2635862, d:"4.8★. Handmade ceramics, jewellery & art in George's Street Arcade — artist-run.", url:'http://www.uniqueshop.ie/', hours:{mon:'10:00-18:00',tue:'10:00-18:00',wed:'10:00-18:00',thu:'10:00-19:00',fri:'10:00-19:00',sat:'10:00-19:00',sun:'11:00-18:00'}},
+    {n:"Design Lane", c:"shop", lat:53.3446612, lng:-6.2684912, d:"4.4★. Sweet little shop of Irish prints, candles, clothes & books. West Temple Bar.", url:'https://designlane.ie/', hours:{mon:'11:00-18:00',tue:'11:00-18:00',wed:'11:00-18:00',thu:'11:00-18:00',fri:'11:00-18:00',sat:'11:00-18:00',sun:'12:00-18:00'}},
+    {n:"The Secret Book & Record Store", c:"shop", lat:53.3430691, lng:-6.2610993, d:"4.7★. Quirky hidden gem — used books, vinyl & curiosities on Wicklow St.", url:'https://www.thesecretbookstore.ie/', hours:{mon:'11:00-18:30',tue:'11:00-18:30',wed:'11:00-18:30',thu:'11:00-19:30',fri:'11:00-18:30',sat:'11:00-18:30',sun:'11:00-18:30'}},
+    {n:"Spindizzy Records", c:"shop", lat:53.3425126, lng:-6.2639295, d:"4.6★. Beloved independent record shop in the Market Arcade off George's St.", url:'https://spindizzyrecords.com/', hours:{mon:'10:00-18:30',tue:'10:00-18:30',wed:'10:00-18:30',thu:'10:00-19:30',fri:'10:00-18:30',sat:'10:00-18:30',sun:'12:00-18:00'}},
+    {n:"Kilmainham Gaol", c:"sight", lat:53.3418701, lng:-6.3098048, d:"4.7★. The emotional heart of Ireland's independence story — moving guided tour. BOOK WEEKS AHEAD, sells out. ~35 min walk / short taxi west.", url:'https://www.kilmainhamgaolmuseum.ie/', img:{file:'Kilmainham Gaol - Panopticon.jpg', credit:'Julian Dunn, CC BY 2.0'}, hours:{mon:'10:30-17:15',tue:'10:30-17:15',wed:'10:30-17:15',thu:'10:30-17:15',fri:'10:30-17:15',sat:'10:30-17:15',sun:'10:30-17:15'}},
+    {n:"Christ Church Cathedral", c:"sight", lat:53.3435130, lng:-6.2710602, d:"4.5★. Stunning medieval cathedral with a historic crypt. ~7 min walk from Temple Bar.", url:'https://christchurchcathedral.ie/', img:{file:'(Ireland) Dublin Christ Church Cathedral.JPG', credit:'Donaldytong, CC BY-SA 3.0'}, hours:{mon:'09:00-18:30',tue:'09:00-18:30',wed:'09:00-18:30',thu:'09:00-18:30',fri:'09:00-18:30',sat:'09:00-18:30',sun:'12:30-18:30'}},
+    {n:"St Patrick's Cathedral", c:"sight", lat:53.3395154, lng:-6.2714767, d:"4.5★. Ireland's largest church, gorgeous Gothic architecture. ~12 min walk south.", url:'https://www.stpatrickscathedral.ie/', img:{file:"St Patrick's Cathedral Exterior, Dublin, Ireland - Diliff.jpg", credit:'Diliff, CC BY-SA 3.0'}, hours:{mon:'09:30-17:00',tue:'09:30-17:00',wed:'09:30-17:00',thu:'09:30-17:00',fri:'09:30-17:00',sat:'09:00-18:00',sun:'09:00-13:00,16:30-18:00'}},
+    {n:"EPIC Emigration Museum", c:"sight", lat:53.3483124, lng:-6.2481792, d:"4.6★. Often voted Europe's top attraction — far better than it sounds. Right next to Urban Brewing; pair with Sat dinner.", url:'https://epicchq.com/', img:{file:'EPIC The Irish Emigration Museum.jpg', credit:'William Murphy, CC BY-SA 2.0'}, hours:{mon:'10:00-18:45',tue:'10:00-18:45',wed:'10:00-18:45',thu:'10:00-18:45',fri:'10:00-18:45',sat:'10:00-18:45',sun:'10:00-18:45'}},
+    {n:"Poolbeg Lighthouse", c:"nature", lat:53.3421383, lng:-6.1512796, d:"4.7★. ~4km flat walk out into Dublin Bay to a red lighthouse — panoramic skyline + sunset views. Drive/taxi (~20 min); no shops, bring water.", url:'https://www.dublinport.ie/', img:{file:'Poolbeg Lighthouse, Dublin Port (507234) (32973096546).jpg', credit:'Robert Linsdell, CC BY 2.0'}},
+    {n:"Howth", c:"nature", lat:53.3890036, lng:-6.0741398, d:"4.5★. Seaside village + cliff walk + seafood. ~30 min DART. Your saved coffee spots (Bailey Brew, Bodega) are here. Classic half-day escape.", url:'https://www.irishrail.ie/en-ie/station/howth', img:{file:'East Pier, Howth Harbour - geograph.org.uk - 7673423.jpg', credit:'Colin Park, CC BY-SA 2.0'}},
+    {n:"Phoenix Park", c:"nature", lat:53.3490364, lng:-6.303101, d:"4.6★. Europe's largest walled park — wild deer, Wellington Monument. Next to the Guinness Storehouse; easy to pair on Monday.", url:'https://maps.google.com/?cid=8617691855706575297', img:{file:'Ireland - Dublin - Phoenix Park - Wellington Monument.jpg', credit:'C.G.P. Grey, CC BY 2.0'}},
+    {n:"St Stephen's Green", c:"nature", lat:53.3381736, lng:-6.259119, d:"4.7★. Beautiful central park just off Grafton St — the easiest green breather between stops.", url:'http://ststephensgreenpark.ie/', img:{file:"Dublin Stephen's Green-44 edit.jpg", credit:'Dronepicr, CC BY 3.0'}}
   ];
   places.forEach((p,i)=>p.id=i);
 
@@ -180,14 +187,58 @@
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
   L.control.attribution({prefix:false}).addAttribution('© OpenStreetMap © CARTO').addTo(map);
 
+  const DAY_KEYS=['mon','tue','wed','thu','fri','sat','sun'];
+  function toMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+  function inRangeToday(spec,minutes){
+    if(!spec||spec==='closed'||spec==='unknown') return false;
+    return spec.split(',').some(r=>{
+      const [a,b]=r.split('-'); let o=toMin(a), c=toMin(b);
+      if(c<=o) c+=1440;
+      return minutes>=o && minutes<c;
+    });
+  }
+  function openFromYesterday(spec,minutesToday){
+    if(!spec||spec==='closed'||spec==='unknown') return false;
+    return spec.split(',').some(r=>{
+      const [a,b]=r.split('-'); let o=toMin(a), c=toMin(b);
+      if(c<=o){ c+=1440; return minutesToday < (c-1440); }
+      return false;
+    });
+  }
+  function dublinNow(){
+    const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Europe/Dublin', weekday:'short', hour:'2-digit', minute:'2-digit', hourCycle:'h23'}).formatToParts(new Date());
+    const wd=parts.find(x=>x.type==='weekday').value.toLowerCase().slice(0,3);
+    const hh=parseInt(parts.find(x=>x.type==='hour').value,10);
+    const mm=parseInt(parts.find(x=>x.type==='minute').value,10);
+    return { day:wd, minutes:hh*60+mm };
+  }
+  function statusOf(p){
+    if(!p.hours) return null;
+    const {day,minutes}=dublinNow();
+    const idx=DAY_KEYS.indexOf(day);
+    const todaySpec=p.hours[day], yestSpec=p.hours[DAY_KEYS[(idx+6)%7]];
+    if(inRangeToday(todaySpec,minutes) || openFromYesterday(yestSpec,minutes)) return 'open';
+    if(todaySpec==='unknown') return 'unknown';
+    return 'closed';
+  }
+  function badgeHtml(p){
+    const s=statusOf(p);
+    if(s===null) return '';
+    if(s==='unknown') return `<span class="obadge unknown"><span class="dot"></span>Hours unclear</span>`;
+    if(s==='open') return `<span class="obadge open"><span class="dot"></span>Open now</span>`;
+    return `<span class="obadge closed"><span class="dot"></span>Closed now</span>`;
+  }
+
   const markers={};
   function makeIcon(p){
-    const done=state.checked.has(p.id), hex=cats[p.c].hex;
+    const done=state.checked.has(p.id), hex=cats[p.c].hex, s=statusOf(p);
+    const dotColor=s==='open'?'#1c8f4c':s==='closed'?'#9c2b23':'#8f7c5c';
     return L.divIcon({className:'', iconSize:[0,0],
       html:`<div style="transform:translate(-50%,-100%); display:flex; flex-direction:column; align-items:center; cursor:pointer; opacity:${done?0.5:1};">
         <div style="display:flex; align-items:center; gap:4px; background:var(--surface-2); border:1px solid ${hex}; border-radius:6px; padding:2px 6px; white-space:nowrap; font-family:var(--font-sans); font-size:11px; font-weight:500; color:var(--text-primary); box-shadow:0 1px 3px rgba(0,0,0,0.18);">
           <i class="ti ${done?'ti-check':cats[p.c].icon}" style="color:${hex}"></i>
           <span style="${done?'text-decoration:line-through; opacity:0.7;':''}">${p.n}</span>
+          ${(!done && s)?`<span style="width:6px; height:6px; border-radius:50%; background:${dotColor}; flex-shrink:0;"></span>`:''}
         </div>
         <div style="width:2px; height:8px; background:${hex};"></div>
       </div>`});
@@ -196,7 +247,7 @@
     const m=L.marker([p.lat,p.lng],{icon:makeIcon(p)}).addTo(map);
     m.on('click',()=>{
       L.popup({closeButton:true, maxWidth:240}).setLatLng([p.lat,p.lng])
-        .setContent(`<div style="font-size:13px;"><div style="font-weight:500; margin-bottom:4px; color:var(--text-primary);">${p.n}</div><div style="color:var(--text-secondary); line-height:1.5;">${p.d}</div>${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; margin-top:6px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-external-link" style="font-size:12px;"></i>Website</a>`:''}</div>`)
+        .setContent(`<div style="font-size:13px;">${p.img?`<img class="popup-photo" src="${commonsUrl(p.img.file,300)}" alt="" loading="lazy" title="${p.img.credit}" onerror="this.remove()">`:''}<div style="font-weight:500; margin-bottom:4px; color:var(--text-primary); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${p.n}${badgeHtml(p)}</div><div style="color:var(--text-secondary); line-height:1.5;">${p.d}</div>${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; margin-top:6px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-external-link" style="font-size:12px;"></i>Website</a>`:''}</div>`)
         .openOn(map);
     });
     markers[p.id]=m;
@@ -224,6 +275,7 @@
       wrap.appendChild(b);
     });
   }
+  function commonsUrl(file,width){ return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${width}`; }
   function matchesSearch(p){ return !state.search || p.n.toLowerCase().includes(state.search); }
   function visible(p){ return state.active.has(p.c) && matchesSearch(p); }
   function applyFilter(){
@@ -245,8 +297,9 @@
           <div class="cbox" style="border-color:${done?c.hex:'var(--border-strong)'}; background:${done?c.hex:'transparent'};">
             ${done?'<i class="ti ti-check" style="color:#fff; font-size:13px;"></i>':''}
           </div>
+          ${p.img?`<img class="rthumb" src="${commonsUrl(p.img.file,96)}" alt="" loading="lazy" title="${p.img.credit}" onerror="this.remove()">`:''}
           <div style="flex:1; min-width:0;">
-            <div class="rname" style="display:flex; align-items:center; gap:6px;">${p.n}${p.url?`<a class="wlink" href="${p.url}" target="_blank" rel="noopener" style="color:var(--text-muted); display:inline-flex; align-items:center;" title="Website"><i class="ti ti-external-link" style="font-size:13px;"></i></a>`:''}</div>
+            <div class="rname" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${p.n}${p.url?`<a class="wlink" href="${p.url}" target="_blank" rel="noopener" style="color:var(--text-muted); display:inline-flex; align-items:center;" title="Website"><i class="ti ti-external-link" style="font-size:13px;"></i></a>`:''}${badgeHtml(p)}</div>
             <div class="rdesc">${p.d}</div>
           </div>`;
         el.appendChild(row);
@@ -256,8 +309,8 @@
   document.getElementById('reset').onclick=()=>{ state.checked.clear(); persist(); places.forEach(refreshMarker); renderList(); updateCount(); };
   document.getElementById('recenter').onclick=()=>{ map.setView(DEFAULT_CENTER,DEFAULT_ZOOM); };
   document.getElementById('fitall').onclick=()=>{
-    const visible=places.filter(p=>state.active.has(p.c)).map(p=>[p.lat,p.lng]);
-    if(visible.length) map.fitBounds(visible,{padding:[35,35]});
+    const visiblePts=places.filter(visible).map(p=>[p.lat,p.lng]);
+    if(visiblePts.length) map.fitBounds(visiblePts,{padding:[35,35]});
   };
   document.getElementById('clearfilters').onclick=()=>{
     state.active.clear();
@@ -275,6 +328,7 @@
   };
 
   renderFilters(); applyFilter(); renderList(); updateCount();
+  setInterval(()=>{ places.forEach(refreshMarker); renderList(); }, 60000);
 })();
 </script>
 </body>
