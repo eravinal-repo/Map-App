@@ -9,17 +9,13 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
   :root{
-    --surface-0:#faf9f5; --surface-1:#f1efe8; --surface-2:#ffffff;
-    --text-primary:#2c2c2a; --text-secondary:#5f5e5a; --text-muted:#888780;
-    --border:#e0ddd3; --border-strong:#c9c6bb;
+    --surface-0:#120d09; --surface-1:#1c1610; --surface-2:#241c14;
+    --text-primary:#f1e6cf; --text-secondary:#c7b393; --text-muted:#8f7c5c;
+    --border:#3d2f1f; --border-strong:#5a4630;
+    --pub-green:#0e6b37; --pub-green-light:#1c8f4c;
+    --pub-red:#9c2b23; --pub-gold:#c9a444;
     --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  }
-  @media (prefers-color-scheme: dark){
-    :root{
-      --surface-0:#1a1a18; --surface-1:#262623; --surface-2:#2f2f2c;
-      --text-primary:#ededea; --text-secondary:#b4b2a9; --text-muted:#888780;
-      --border:#3a3a36; --border-strong:#4a4a45;
-    }
+    --font-display:Georgia,'Times New Roman',serif;
   }
   *{box-sizing:border-box;}
   body{
@@ -27,15 +23,16 @@
     font-family:var(--font-sans); line-height:1.6; -webkit-font-smoothing:antialiased;
   }
   .wrap{max-width:820px; margin:0 auto; padding:24px 18px 60px;}
-  h1{font-size:22px; font-weight:500; margin:0 0 4px;}
+  h1{font-size:26px; font-weight:800; margin:0; font-family:var(--font-display); letter-spacing:0.3px;
+    color:var(--pub-green-light); text-shadow:1.5px 1.5px 0 var(--pub-red), 0 0 14px rgba(201,164,68,0.25);}
   .sub{font-size:14px; color:var(--text-secondary); margin:0 0 20px;}
   #counter{font-size:14px; color:var(--text-secondary); margin-bottom:12px;}
   #checked-count{font-weight:500; color:var(--text-primary);}
   #filters{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
   .fbtn{cursor:pointer; padding:5px 11px; font-size:13px; display:flex; align-items:center; gap:6px;
     border-radius:20px; font-family:inherit; transition:all .12s;}
-  .mapbox{position:relative; width:100%; height:min(60vh,480px); border:0.5px solid var(--border);
-    border-radius:12px; overflow:hidden; background:var(--surface-1);}
+  .mapbox{position:relative; width:100%; height:min(60vh,480px); border:1px solid var(--border-strong);
+    border-radius:12px; overflow:hidden; background:var(--surface-1); box-shadow:0 0 0 1px rgba(201,164,68,0.15);}
   #map{position:absolute; inset:0;}
   .barrow{display:flex; justify-content:space-between; align-items:center; margin:12px 0 8px;}
   .hint{font-size:13px; color:var(--text-muted);}
@@ -51,20 +48,22 @@
   .rdesc{font-size:12px; color:var(--text-muted); line-height:1.45; margin-top:2px;}
   .done .rname{text-decoration:line-through; opacity:0.6;}
   .leaflet-popup-content{font-family:var(--font-sans);}
+  .leaflet-popup-content-wrapper, .leaflet-popup-tip{background:var(--surface-2); color:var(--text-primary);}
+  .leaflet-popup-close-button{color:var(--text-muted) !important;}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div style="display:flex; align-items:center; gap:12px; margin-bottom:2px;">
-    <svg width="34" height="34" viewBox="0 0 40 40" style="flex-shrink:0;">
+    <svg width="36" height="36" viewBox="0 0 40 40" style="flex-shrink:0;">
       <!-- original stylized stout-glass icon (not a trademarked logo): a single G split by the foam line -->
-      <path d="M11 5 L29 5 L26.5 34 Q26 37 23 37 L17 37 Q14 37 13.5 34 Z" fill="#2c2c2a"/>
-      <path d="M11.6 13.5 L28.4 13.5 L26.5 34 Q26 37 23 37 L17 37 Q14 37 13.5 34 Z" fill="#1a1a18"/>
-      <path d="M11.9 11 L28.1 11 L28.4 13.5 L11.6 13.5 Z" fill="#f3ead9"/>
-      <text x="20" y="19" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="17" fill="#f3ead9">G</text>
-      <line x1="10.5" y1="13.5" x2="29.5" y2="13.5" stroke="#1a1a18" stroke-width="1.1"/>
+      <path d="M11 5 L29 5 L26.5 34 Q26 37 23 37 L17 37 Q14 37 13.5 34 Z" fill="#0c0906" stroke="var(--pub-gold)" stroke-width="0.6"/>
+      <path d="M11.6 13.5 L28.4 13.5 L26.5 34 Q26 37 23 37 L17 37 Q14 37 13.5 34 Z" fill="#050403"/>
+      <path d="M11.9 11 L28.1 11 L28.4 13.5 L11.6 13.5 Z" fill="#f1e6cf"/>
+      <text x="20" y="19" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="17" fill="#f1e6cf">G</text>
+      <line x1="10.5" y1="13.5" x2="29.5" y2="13.5" stroke="#050403" stroke-width="1.1"/>
     </svg>
-    <h1 style="margin:0;">Split the G</h1>
+    <h1>Split the G with E</h1>
   </div>
   <p class="sub">July 12–19 · based around the Morrison &amp; Temple Bar hotels</p>
 
@@ -184,7 +183,7 @@
     const m=L.marker([p.lat,p.lng],{icon:makeIcon(p)}).addTo(map);
     m.on('click',()=>{
       L.popup({closeButton:true, maxWidth:240}).setLatLng([p.lat,p.lng])
-        .setContent(`<div style="font-size:13px;"><div style="font-weight:500; margin-bottom:4px;">${p.n}</div><div style="color:#5f5e5a; line-height:1.5;">${p.d}</div>${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; margin-top:6px; font-size:12px; color:var(--text-secondary); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-external-link" style="font-size:12px;"></i>Website</a>`:''}</div>`)
+        .setContent(`<div style="font-size:13px;"><div style="font-weight:500; margin-bottom:4px; color:var(--text-primary);">${p.n}</div><div style="color:var(--text-secondary); line-height:1.5;">${p.d}</div>${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; margin-top:6px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-external-link" style="font-size:12px;"></i>Website</a>`:''}</div>`)
         .openOn(map);
     });
     markers[p.id]=m;
