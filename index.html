@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dublin Trip Map — Eat, Drink & Explore</title>
+<title>Split the G — Dublin Trip Map</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -39,9 +39,9 @@
   #map{position:absolute; inset:0;}
   .barrow{display:flex; justify-content:space-between; align-items:center; margin:12px 0 8px;}
   .hint{font-size:13px; color:var(--text-muted);}
-  #reset, #fitall, #clearfilters{cursor:pointer; padding:4px 12px; font-size:13px; border-radius:8px; background:transparent;
+  #reset, #fitall, #clearfilters, #recenter{cursor:pointer; padding:4px 12px; font-size:13px; border-radius:8px; background:transparent;
     border:0.5px solid var(--border-strong); color:var(--text-secondary); font-family:inherit;}
-  #reset:hover, #fitall:hover, #clearfilters:hover{background:var(--surface-1);}
+  #reset:hover, #fitall:hover, #clearfilters:hover, #recenter:hover{background:var(--surface-1);}
   .ghead{display:flex; align-items:center; gap:6px; font-size:13px; font-weight:500; margin:14px 0 6px;}
   .row{display:flex; align-items:flex-start; gap:10px; padding:8px 10px; border:0.5px solid var(--border);
     border-radius:8px; margin-bottom:6px; cursor:pointer; background:var(--surface-2);}
@@ -55,7 +55,17 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>Dublin trip — eat, drink &amp; explore</h1>
+  <div style="display:flex; align-items:center; gap:12px; margin-bottom:2px;">
+    <svg width="34" height="34" viewBox="0 0 40 40" style="flex-shrink:0;">
+      <!-- original stylized stout-glass icon (not a trademarked logo): a single G split by the foam line -->
+      <path d="M11 5 L29 5 L26.5 34 Q26 37 23 37 L17 37 Q14 37 13.5 34 Z" fill="#2c2c2a"/>
+      <path d="M11.6 13.5 L28.4 13.5 L26.5 34 Q26 37 23 37 L17 37 Q14 37 13.5 34 Z" fill="#1a1a18"/>
+      <path d="M11.9 11 L28.1 11 L28.4 13.5 L11.6 13.5 Z" fill="#f3ead9"/>
+      <text x="20" y="19" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="17" fill="#f3ead9">G</text>
+      <line x1="10.5" y1="13.5" x2="29.5" y2="13.5" stroke="#1a1a18" stroke-width="1.1"/>
+    </svg>
+    <h1 style="margin:0;">Split the G</h1>
+  </div>
   <p class="sub">July 12–19 · based around the Morrison &amp; Temple Bar hotels</p>
 
   <div id="counter"><span id="checked-count">0</span> of <span id="total-count">0</span> places checked off</div>
@@ -69,6 +79,7 @@
   <div class="barrow">
     <span class="hint">Tap a row to check it off · tap a pin for details</span>
     <div style="display:flex; gap:8px;">
+      <button id="recenter">Recenter</button>
       <button id="fitall">Fit all</button>
       <button id="reset">Reset</button>
     </div>
@@ -152,7 +163,8 @@
   const state = { checked:new Set(saved), active:new Set(Object.keys(cats)) };
   function persist(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify([...state.checked])); }catch(e){} }
 
-  const map = L.map('map',{scrollWheelZoom:false, attributionControl:false}).setView([53.3455,-6.263],14);
+  const DEFAULT_CENTER=[53.3455,-6.263], DEFAULT_ZOOM=14;
+  const map = L.map('map',{scrollWheelZoom:false, attributionControl:false}).setView(DEFAULT_CENTER,DEFAULT_ZOOM);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
   L.control.attribution({prefix:false}).addAttribution('© OpenStreetMap © CARTO').addTo(map);
 
@@ -228,6 +240,7 @@
     });
   }
   document.getElementById('reset').onclick=()=>{ state.checked.clear(); persist(); places.forEach(refreshMarker); renderList(); updateCount(); };
+  document.getElementById('recenter').onclick=()=>{ map.setView(DEFAULT_CENTER,DEFAULT_ZOOM); };
   document.getElementById('fitall').onclick=()=>{
     const visible=places.filter(p=>state.active.has(p.c)).map(p=>[p.lat,p.lng]);
     if(visible.length) map.fitBounds(visible,{padding:[35,35]});
