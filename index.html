@@ -103,7 +103,8 @@
   </div>
   <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
     <div id="filters" style="margin-bottom:0; flex:1;"></div>
-    <div style="display:flex; gap:8px; flex-shrink:0;">
+    <div style="display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap;">
+      <button id="nearme" class="fbtn"><i class="ti ti-walk"></i>Near me</button>
       <button id="openonly" class="fbtn"><i class="ti ti-clock"></i>Open now</button>
       <button id="clearfilters">Clear filters</button>
     </div>
@@ -209,7 +210,16 @@
 
   let saved=[];
   try{ saved = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch(e){}
-  const state = { checked:new Set(saved), active:new Set(), search:'', openOnly:false };
+  const state = { checked:new Set(saved), active:new Set(), search:'', openOnly:false, nearMe:false };
+  let userPos=null;
+  function distMeters(a,b){
+    const R=6371000, toRad=d=>d*Math.PI/180;
+    const dLat=toRad(b.lat-a.lat), dLng=toRad(b.lng-a.lng);
+    const s=Math.sin(dLat/2)**2 + Math.cos(toRad(a.lat))*Math.cos(toRad(b.lat))*Math.sin(dLng/2)**2;
+    return 2*R*Math.asin(Math.sqrt(s));
+  }
+  function fmtDist(m){ return m<950 ? (Math.round(m/10)*10)+' m' : (m/1000).toFixed(1)+' km'; }
+  function directionsUrl(p){ return `https://maps.apple.com/?daddr=${p.lat},${p.lng}&dirflg=w`; }
   function persist(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify([...state.checked])); }catch(e){} }
 
   const DEFAULT_CENTER=[53.3455,-6.263], DEFAULT_ZOOM=14;
@@ -277,7 +287,7 @@
     const m=L.marker([p.lat,p.lng],{icon:makeIcon(p)}).addTo(map);
     m.on('click',()=>{
       L.popup({closeButton:true, maxWidth:240}).setLatLng([p.lat,p.lng])
-        .setContent(`<div style="font-size:13px;">${p.img?`<img class="popup-photo" src="${commonsUrl(p.img.file,300)}" alt="" loading="lazy" title="${p.img.credit}" onerror="this.remove()">`:''}<div style="font-weight:500; margin-bottom:4px; color:var(--text-primary); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${p.n}${badgeHtml(p)}</div><div style="color:var(--text-secondary); line-height:1.5;">${p.d}</div>${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; margin-top:6px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-external-link" style="font-size:12px;"></i>Website</a>`:''}</div>`)
+        .setContent(`<div style="font-size:13px;">${p.img?`<img class="popup-photo" src="${commonsUrl(p.img.file,300)}" alt="" loading="lazy" title="${p.img.credit}" onerror="this.remove()">`:''}<div style="font-weight:500; margin-bottom:4px; color:var(--text-primary); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${p.n}${badgeHtml(p)}</div><div style="color:var(--text-secondary); line-height:1.5;">${p.d}</div><div style="display:flex; gap:14px; margin-top:6px;">${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-external-link" style="font-size:12px;"></i>Website</a>`:''}<a href="${directionsUrl(p)}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-directions" style="font-size:12px;"></i>Directions</a></div></div>`)
         .openOn(map);
     });
     markers[p.id]=m;
@@ -311,29 +321,38 @@
   function applyFilter(){
     places.forEach(p=>{ if(visible(p)) markers[p.id].addTo(map); else map.removeLayer(markers[p.id]); });
   }
+  function makeRow(p, distance){
+    const done=state.checked.has(p.id), c=cats[p.c];
+    const row=document.createElement('div'); row.className='row'+(done?' done':'');
+    row.onclick=(e)=>{ if(e.target.closest('.wlink')) return; toggle(p.id); };
+    const catIcon=distance!=null?`<i class="ti ${c.icon}" style="color:${c.hex}; font-size:13px; flex-shrink:0;"></i>`:'';
+    const distHtml=distance!=null?`<span style="color:var(--text-muted); font-size:11px; font-weight:500; flex-shrink:0; margin-left:auto;">${fmtDist(distance)}</span>`:'';
+    row.innerHTML=`
+      <div class="cbox" style="border-color:${done?c.hex:'var(--border-strong)'}; background:${done?c.hex:'transparent'};">
+        ${done?'<i class="ti ti-check" style="color:#fff; font-size:13px;"></i>':''}
+      </div>
+      ${p.img?`<img class="rthumb" src="${commonsUrl(p.img.file,96)}" alt="" loading="lazy" title="${p.img.credit}" onerror="this.remove()">`:''}
+      <div style="flex:1; min-width:0;">
+        <div class="rname" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${catIcon}${p.n}${p.url?`<a class="wlink" href="${p.url}" target="_blank" rel="noopener" style="color:var(--text-muted); display:inline-flex; align-items:center;" title="Website"><i class="ti ti-external-link" style="font-size:13px;"></i></a>`:''}<a class="wlink" href="${directionsUrl(p)}" target="_blank" rel="noopener" style="color:var(--text-muted); display:inline-flex; align-items:center;" title="Directions"><i class="ti ti-directions" style="font-size:13px;"></i></a>${badgeHtml(p)}${distHtml}</div>
+        <div class="rdesc">${p.d}</div>
+      </div>`;
+    return row;
+  }
   function renderList(){
-    const grouped={};
-    places.filter(visible).forEach(p=>{ (grouped[p.c]=grouped[p.c]||[]).push(p); });
     const el=document.getElementById('list'); el.innerHTML='';
+    const vis=places.filter(visible);
+    if(state.nearMe && userPos){
+      vis.sort((a,b)=>distMeters(userPos,a)-distMeters(userPos,b));
+      vis.forEach(p=>el.appendChild(makeRow(p, distMeters(userPos,p))));
+      return;
+    }
+    const grouped={};
+    vis.forEach(p=>{ (grouped[p.c]=grouped[p.c]||[]).push(p); });
     Object.keys(cats).forEach(k=>{
       if(!grouped[k]) return; const c=cats[k];
       const h=document.createElement('div'); h.className='ghead'; h.style.color=c.hex;
       h.innerHTML=`<i class="ti ${c.icon}"></i>${c.label}`; el.appendChild(h);
-      grouped[k].forEach(p=>{
-        const done=state.checked.has(p.id);
-        const row=document.createElement('div'); row.className='row'+(done?' done':'');
-        row.onclick=(e)=>{ if(e.target.closest('.wlink')) return; toggle(p.id); };
-        row.innerHTML=`
-          <div class="cbox" style="border-color:${done?c.hex:'var(--border-strong)'}; background:${done?c.hex:'transparent'};">
-            ${done?'<i class="ti ti-check" style="color:#fff; font-size:13px;"></i>':''}
-          </div>
-          ${p.img?`<img class="rthumb" src="${commonsUrl(p.img.file,96)}" alt="" loading="lazy" title="${p.img.credit}" onerror="this.remove()">`:''}
-          <div style="flex:1; min-width:0;">
-            <div class="rname" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${p.n}${p.url?`<a class="wlink" href="${p.url}" target="_blank" rel="noopener" style="color:var(--text-muted); display:inline-flex; align-items:center;" title="Website"><i class="ti ti-external-link" style="font-size:13px;"></i></a>`:''}${badgeHtml(p)}</div>
-            <div class="rdesc">${p.d}</div>
-          </div>`;
-        el.appendChild(row);
-      });
+      grouped[k].forEach(p=>el.appendChild(makeRow(p)));
     });
   }
   document.getElementById('reset').onclick=()=>{ state.checked.clear(); persist(); places.forEach(refreshMarker); renderList(); updateCount(); };
@@ -362,6 +381,7 @@
   }
   function onPosition(pos){
     const ll=[pos.coords.latitude, pos.coords.longitude];
+    userPos={lat:pos.coords.latitude, lng:pos.coords.longitude};
     if(!userMarker){
       userMarker=L.marker(ll,{icon:L.divIcon({className:'', iconSize:[16,16], iconAnchor:[8,8], html:'<div class="user-dot-wrap"><div class="user-dot"></div></div>'}), zIndexOffset:1000}).addTo(map);
       userAccuracyCircle=L.circle(ll,{radius:pos.coords.accuracy, color:'#1a73e8', weight:1, fillColor:'#1a73e8', fillOpacity:0.08}).addTo(map);
@@ -374,6 +394,7 @@
       map.setView(ll, Math.max(map.getZoom(), 16));
     }
     showLocateStatus('');
+    if(state.nearMe) renderList();
   }
   function onLocateError(err){
     let msg='Could not get your location.';
@@ -383,16 +404,33 @@
     locateBtn.classList.remove('on');
     watchId=null; gotFirstFix=false;
   }
-  locateBtn.onclick=()=>{
+  function startWatch(){
+    if(watchId!=null) return;
     if(!navigator.geolocation){ showLocateStatus('Geolocation is not supported in this browser.'); return; }
-    if(watchId==null){
-      showLocateStatus('Locating…');
-      locateBtn.classList.add('on');
-      watchId=navigator.geolocation.watchPosition(onPosition, onLocateError, {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
-    } else if(userMarker){
-      map.setView(userMarker.getLatLng(), Math.max(map.getZoom(), 16));
-    }
+    showLocateStatus('Locating…');
+    locateBtn.classList.add('on');
+    watchId=navigator.geolocation.watchPosition(onPosition, onLocateError, {enableHighAccuracy:true, maximumAge:5000, timeout:15000});
+  }
+  locateBtn.onclick=()=>{
+    if(watchId==null) startWatch();
+    else if(userMarker) map.setView(userMarker.getLatLng(), Math.max(map.getZoom(), 16));
   };
+  const nearMeBtn=document.getElementById('nearme');
+  function renderNearMeBtn(){
+    nearMeBtn.style.border=`0.5px solid ${state.nearMe?'var(--pub-gold)':'var(--border)'}`;
+    nearMeBtn.style.background=state.nearMe?'var(--pub-gold)':'transparent';
+    nearMeBtn.style.color=state.nearMe?'#1c1610':'var(--text-secondary)';
+  }
+  nearMeBtn.onclick=()=>{
+    state.nearMe=!state.nearMe;
+    renderNearMeBtn();
+    if(state.nearMe){
+      if(state.active.size===0){ state.active=new Set(Object.keys(cats)); renderFilters(); applyFilter(); }
+      startWatch();
+    }
+    renderList();
+  };
+  renderNearMeBtn();
   const searchInput=document.getElementById('search'), searchClear=document.getElementById('searchclear');
   searchInput.oninput=(e)=>{
     state.search=e.target.value.trim().toLowerCase();
