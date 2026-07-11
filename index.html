@@ -88,9 +88,12 @@
     <input id="search" type="text" placeholder="Search places…" autocomplete="off" />
     <button id="searchclear" title="Clear search"><i class="ti ti-x"></i></button>
   </div>
-  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px;">
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
     <div id="filters" style="margin-bottom:0; flex:1;"></div>
-    <button id="clearfilters" style="flex-shrink:0;">Clear filters</button>
+    <div style="display:flex; gap:8px; flex-shrink:0;">
+      <button id="openonly" class="fbtn"><i class="ti ti-clock"></i>Open now</button>
+      <button id="clearfilters">Clear filters</button>
+    </div>
   </div>
 
   <div class="mapbox"><div id="map"></div></div>
@@ -153,6 +156,12 @@
     {n:"Grogan's", c:"pub", lat:53.3422396, lng:-6.2626181, d:"My pick. Iconic old-school pub, famous toastie + artsy crowd.", url:'http://www.groganspub.ie/', hours:{mon:'10:30-23:30',tue:'10:30-23:30',wed:'10:30-23:30',thu:'10:30-23:30',fri:'10:30-00:30',sat:'10:30-00:30',sun:'12:30-23:00'}},
     {n:"Mulligan's", c:"pub", lat:53.3468861, lng:-6.2554264, d:"My pick. Many locals' best-Guinness vote. Just outside Temple Bar.", url:'https://www.facebook.com/profile.php?id=100064593853632', hours:{mon:'10:00-23:30',tue:'10:00-23:30',wed:'10:00-23:30',thu:'10:00-23:30',fri:'10:00-00:30',sat:'10:00-00:30',sun:'12:30-23:00'}},
     {n:"The Hairy Lemon", c:"pub", lat:53.341233, lng:-6.2637511, d:"My pick. Characterful pub, hearty stew + live music.", url:'https://thehairylemon.ie/', hours:{mon:'10:00-23:30',tue:'10:00-23:30',wed:'10:00-23:30',thu:'10:00-23:30',fri:'10:00-01:30',sat:'10:00-01:30',sun:'10:00-23:00'}},
+    {n:"The Stag's Head", c:"pub", lat:53.3433, lng:-6.2646, d:"Beautifully preserved Victorian pub down a Dame Court alley — stained glass, mahogany bar, mounted stag head.", url:'https://www.louisfitzgerald.com/venue/the-stags-head/', hours:{mon:'10:30-23:30',tue:'10:30-23:30',wed:'10:30-23:30',thu:'10:30-23:30',fri:'10:30-00:30',sat:'10:30-00:30',sun:'12:30-23:00'}},
+    {n:"The Palace Bar", c:"pub", lat:53.3459, lng:-6.2612, d:"Atmospheric Victorian pub on Fleet St, a journalists'-and-writers' haunt since 1823. Skylit back room.", url:'https://www.thepalacebardublin.com/', hours:{mon:'10:30-23:30',tue:'10:30-23:30',wed:'10:30-23:30',thu:'10:30-23:30',fri:'10:30-00:30',sat:'10:30-00:30',sun:'12:30-23:00'}},
+    {n:"McDaid's", c:"pub", lat:53.3406, lng:-6.2603, d:"Storied literary pub off Grafton St — once Brendan Behan's local. Church-like high ceilings.", url:'https://maps.google.com/?q=McDaid%27s+Dublin', hours:{mon:'10:30-23:30',tue:'10:30-23:30',wed:'10:30-23:30',thu:'10:30-23:30',fri:'10:30-00:30',sat:'10:30-00:30',sun:'12:30-23:00'}},
+    {n:"Toners", c:"pub", lat:53.3373, lng:-6.2461, d:"Dublin's oldest pub still in its original form — famously the only pub W.B. Yeats ever set foot in. ~15 min SE on Baggot St.", url:'https://www.tonerspub.ie/', hours:{mon:'10:30-23:30',tue:'10:30-23:30',wed:'10:30-23:30',thu:'10:30-23:30',fri:'10:30-00:30',sat:'10:30-00:30',sun:'12:30-23:00'}},
+    {n:"The International Bar", c:"pub", lat:53.3428, lng:-6.2607, d:"Cosy Victorian pub on Wicklow St with an upstairs comedy club — Dublin's original stand-up room.", url:'https://internationalbar.com/', hours:{mon:'12:30-23:30',tue:'12:30-23:30',wed:'12:30-23:30',thu:'12:30-23:30',fri:'12:30-00:30',sat:'12:30-00:30',sun:'16:00-23:00'}},
+    {n:"Whelan's", c:"pub", lat:53.3348, lng:-6.2645, d:"Iconic live-music venue & bar on Wexford St — trad sessions, indie gigs, great trad-Thursday nights. ~10 min south.", url:'https://www.whelanslive.com/', hours:{mon:'16:00-23:30',tue:'16:00-23:30',wed:'16:00-23:30',thu:'16:00-01:00',fri:'16:00-02:30',sat:'14:00-02:30',sun:'14:00-23:00'}},
     {n:"Book of Kells & Long Room", c:"sight", lat:53.343888, lng:-6.2567554, d:"My pick. 9th-c. manuscript + stunning library. Book a slot. ~7 min. Note: Long Room under conservation works through 2027, much of the book collection removed.", url:'https://bookofkellsexperience.ie/', img:{file:'Long Room Interior, Trinity College Dublin, Ireland - Diliff.jpg', credit:'Diliff, CC BY-SA 4.0'}, hours:{mon:'09:00-18:00',tue:'09:00-18:00',wed:'09:00-18:00',thu:'09:00-18:00',fri:'09:00-18:00',sat:'09:00-18:00',sun:'09:30-17:00'}},
     {n:"Dublin Castle", c:"sight", lat:53.3428861, lng:-6.2674284, d:"⚠️ CLOSED to the public 5 May 2026 – Jan 2027 (EU Council Presidency hosting, confirmed on dublincastle.ie). Not visitable during this trip.", url:'https://dublincastle.ie/', img:{file:'(Ireland) Dublin Castle Up Yard.JPG', credit:'Donaldytong, CC BY-SA 3.0'}, hours:{mon:'closed',tue:'closed',wed:'closed',thu:'closed',fri:'closed',sat:'closed',sun:'closed'}},
     {n:"Chapters Bookstore", c:"shop", lat:53.3515089, lng:-6.2639632, d:"My pick. Ireland's largest independent bookshop + café. ~8 min north.", url:'http://chaptersbookstore.com/', hours:{mon:'09:30-18:30',tue:'09:30-18:30',wed:'09:30-18:30',thu:'09:30-20:00',fri:'09:30-18:30',sat:'09:30-18:30',sun:'12:00-18:30'}},
@@ -179,7 +188,7 @@
 
   let saved=[];
   try{ saved = JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); }catch(e){}
-  const state = { checked:new Set(saved), active:new Set(Object.keys(cats)), search:'' };
+  const state = { checked:new Set(saved), active:new Set(), search:'', openOnly:false };
   function persist(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify([...state.checked])); }catch(e){} }
 
   const DEFAULT_CENTER=[53.3455,-6.263], DEFAULT_ZOOM=14;
@@ -277,7 +286,7 @@
   }
   function commonsUrl(file,width){ return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${width}`; }
   function matchesSearch(p){ return !state.search || p.n.toLowerCase().includes(state.search); }
-  function visible(p){ return state.active.has(p.c) && matchesSearch(p); }
+  function visible(p){ return state.active.has(p.c) && matchesSearch(p) && (!state.openOnly || statusOf(p)==='open'); }
   function applyFilter(){
     places.forEach(p=>{ if(visible(p)) markers[p.id].addTo(map); else map.removeLayer(markers[p.id]); });
   }
@@ -316,6 +325,14 @@
     state.active.clear();
     renderFilters(); applyFilter(); renderList();
   };
+  const openOnlyBtn=document.getElementById('openonly');
+  function renderOpenOnlyBtn(){
+    openOnlyBtn.style.border=`0.5px solid ${state.openOnly?'var(--pub-gold)':'var(--border-strong)'}`;
+    openOnlyBtn.style.background=state.openOnly?'var(--pub-gold)':'transparent';
+    openOnlyBtn.style.color=state.openOnly?'#1c1610':'var(--text-secondary)';
+  }
+  openOnlyBtn.onclick=()=>{ state.openOnly=!state.openOnly; renderOpenOnlyBtn(); applyFilter(); renderList(); };
+  renderOpenOnlyBtn();
   const searchInput=document.getElementById('search'), searchClear=document.getElementById('searchclear');
   searchInput.oninput=(e)=>{
     state.search=e.target.value.trim().toLowerCase();
@@ -328,7 +345,7 @@
   };
 
   renderFilters(); applyFilter(); renderList(); updateCount();
-  setInterval(()=>{ places.forEach(refreshMarker); renderList(); }, 60000);
+  setInterval(()=>{ places.forEach(refreshMarker); applyFilter(); renderList(); }, 60000);
 })();
 </script>
 </body>
