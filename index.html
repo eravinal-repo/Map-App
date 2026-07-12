@@ -49,6 +49,16 @@
     border:0.5px solid var(--border-strong); background:var(--surface-0); color:var(--text-primary);}
   .fxfield input:focus{outline:none; border-color:var(--pub-gold);}
   .fxstatus{font-size:11px; color:var(--text-muted); margin-top:8px;}
+  #weathernudge{align-items:center; gap:10px; padding:10px 12px; border-radius:10px; margin-bottom:14px; font-size:13px; flex-wrap:wrap;}
+  #weathernudge.rain{background:rgba(90,130,180,0.14); border:1px solid rgba(90,130,180,0.4);}
+  #weathernudge.clear{background:rgba(201,164,68,0.14); border:1px solid rgba(201,164,68,0.4);}
+  #weathernudge .wn-icon{font-size:20px; flex-shrink:0;}
+  #weathernudge.rain .wn-icon{color:#6ea8dc;}
+  #weathernudge.clear .wn-icon{color:var(--pub-gold);}
+  #weathernudge .wn-text{flex:1; min-width:180px; line-height:1.4; color:var(--text-primary);}
+  #weathernudge .wn-actions{display:flex; gap:6px; flex-shrink:0;}
+  #weathernudge .wn-actions button{cursor:pointer; font-family:inherit; font-size:12px; padding:6px 10px; border-radius:8px;
+    border:0.5px solid var(--border-strong); background:var(--surface-1); color:var(--text-secondary); -webkit-tap-highlight-color:transparent;}
   #counter{font-size:14px; color:var(--text-secondary); margin-bottom:12px;}
   #checked-count{font-weight:500; color:var(--text-primary);}
   #filters{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
@@ -132,6 +142,7 @@
     </div>
     <div id="fxstatus" class="fxstatus">Loading rate…</div>
   </div>
+  <div id="weathernudge" style="display:none;"></div>
 
   <div id="counter"><span id="checked-count">0</span> of <span id="total-count">0</span> places checked off</div>
   <div id="searchwrap">
@@ -579,6 +590,8 @@
     renderOpenOnlyBtn();
     renderCityButtons();
     renderFilters(); applyFilter(); renderList(); updateCount();
+    document.getElementById('weathernudge').style.display='none';
+    loadWeather(key);
   }
 
   renderCityButtons();
@@ -640,6 +653,58 @@
     fxGbp.value=(eur*fxGbpRate).toFixed(2);
   };
   loadFxRate();
+
+  function weatherBucket(code){
+    if([51,53,55,56,57,61,63,65,66,67,80,81,82,95,96,99].includes(code)) return 'rain';
+    if([0,1].includes(code)) return 'clear';
+    return 'other';
+  }
+  function renderWeatherNudge(cityKey, info){
+    const el=document.getElementById('weathernudge');
+    if(cityKey!==currentCity) return;
+    const bucket=weatherBucket(info.code);
+    const cLabel=cities[cityKey].label;
+    const tC=Math.round(info.tmax), tF=Math.round(info.tmax*9/5+32);
+    if(bucket==='rain' || info.precip>=50){
+      el.className='rain'; el.style.display='flex';
+      el.innerHTML=`<i class="ti ti-cloud-rain wn-icon"></i><div class="wn-text">Rain likely in ${cLabel} today (${info.precip}% chance, ${tC}°C/${tF}°F) — good day for pubs, museums and coffee shops.</div><div class="wn-actions"><button id="wnAction">Show indoor spots</button><button id="wnDismiss" title="Dismiss"><i class="ti ti-x"></i></button></div>`;
+      document.getElementById('wnAction').onclick=()=>{
+        state.active=new Set(['pub','food','coffee','sight','shop']);
+        renderFilters(); applyFilter(); renderList();
+        el.style.display='none';
+      };
+      document.getElementById('wnDismiss').onclick=()=>{ el.style.display='none'; };
+    } else if(bucket==='clear' && info.precip<20){
+      el.className='clear'; el.style.display='flex';
+      el.innerHTML=`<i class="ti ti-sun wn-icon"></i><div class="wn-text">Clear skies in ${cLabel} today (${tC}°C/${tF}°F) — good day to get outside.</div><div class="wn-actions"><button id="wnAction">Show outdoor spots</button><button id="wnDismiss" title="Dismiss"><i class="ti ti-x"></i></button></div>`;
+      document.getElementById('wnAction').onclick=()=>{
+        state.active=new Set(['nature']);
+        renderFilters(); applyFilter(); renderList();
+        el.style.display='none';
+      };
+      document.getElementById('wnDismiss').onclick=()=>{ el.style.display='none'; };
+    } else {
+      el.style.display='none';
+    }
+  }
+  function loadWeather(cityKey){
+    const cfg=cities[cityKey];
+    const today=new Date().toISOString().slice(0,10);
+    const cacheKey='weather-'+cityKey;
+    try{
+      const cached=JSON.parse(localStorage.getItem(cacheKey)||'null');
+      if(cached && cached.date===today){ renderWeatherNudge(cityKey, cached); return; }
+    }catch(e){}
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${cfg.center[0]}&longitude=${cfg.center[1]}&daily=weather_code,precipitation_probability_max,temperature_2m_max&timezone=auto&forecast_days=1`)
+      .then(r=>r.json())
+      .then(data=>{
+        const info={ date:data.daily.time[0], code:data.daily.weather_code[0], precip:data.daily.precipitation_probability_max[0], tmax:data.daily.temperature_2m_max[0] };
+        try{ localStorage.setItem(cacheKey, JSON.stringify(info)); }catch(e){}
+        renderWeatherNudge(cityKey, info);
+      })
+      .catch(()=>{});
+  }
+  loadWeather(currentCity);
 })();
 </script>
 </body>
