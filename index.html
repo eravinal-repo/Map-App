@@ -36,6 +36,17 @@
   .citybtn{cursor:pointer; padding:7px 16px; font-size:13px; font-weight:600; border-radius:20px; font-family:inherit;
     border:1px solid var(--border-strong); background:transparent; color:var(--text-secondary); -webkit-tap-highlight-color:transparent;}
   .citybtn.active{background:var(--pub-green-light); border-color:var(--pub-green-light); color:#0c0906;}
+  #fxtoggle{cursor:pointer; padding:7px 14px; font-size:13px; border-radius:20px; background:transparent;
+    border:1px solid var(--border-strong); color:var(--text-secondary); font-family:inherit; display:flex; align-items:center; gap:6px; -webkit-tap-highlight-color:transparent;}
+  #fxtoggle.on{background:var(--pub-gold); border-color:var(--pub-gold); color:#1c1610;}
+  #fxpanel{background:var(--surface-2); border:0.5px solid var(--border); border-radius:10px; padding:12px; margin-bottom:14px;}
+  .fxrow{display:flex; align-items:flex-end; gap:8px;}
+  .fxfield{flex:1; min-width:0;}
+  .fxfield label{display:block; font-size:11px; color:var(--text-muted); margin-bottom:4px; font-weight:500;}
+  .fxfield input{width:100%; padding:9px 10px; font-size:16px; font-family:inherit; border-radius:8px;
+    border:0.5px solid var(--border-strong); background:var(--surface-0); color:var(--text-primary);}
+  .fxfield input:focus{outline:none; border-color:var(--pub-gold);}
+  .fxstatus{font-size:11px; color:var(--text-muted); margin-top:8px;}
   #counter{font-size:14px; color:var(--text-secondary); margin-bottom:12px;}
   #checked-count{font-weight:500; color:var(--text-primary);}
   #filters{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;}
@@ -98,7 +109,27 @@
     <h1>Split the G with E</h1>
   </div>
   <p class="sub" id="citysubtitle">July 12–19 · based around the Morrison &amp; Temple Bar hotels</p>
-  <div id="cityswitch"></div>
+  <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+    <div id="cityswitch" style="margin-bottom:0;"></div>
+    <button id="fxtoggle"><i class="ti ti-arrows-exchange"></i> Currency Converter</button>
+  </div>
+  <div id="fxpanel" style="display:none;">
+    <div class="fxrow">
+      <div class="fxfield">
+        <label for="fxEur">EUR €</label>
+        <input id="fxEur" type="number" inputmode="decimal" placeholder="0.00">
+      </div>
+      <div class="fxfield">
+        <label for="fxGbp">GBP £</label>
+        <input id="fxGbp" type="number" inputmode="decimal" placeholder="0.00">
+      </div>
+      <div class="fxfield">
+        <label for="fxUsd">USD $</label>
+        <input id="fxUsd" type="number" inputmode="decimal" placeholder="0.00">
+      </div>
+    </div>
+    <div id="fxstatus" class="fxstatus">Loading rate…</div>
+  </div>
 
   <div id="counter"><span id="checked-count">0</span> of <span id="total-count">0</span> places checked off</div>
   <div id="searchwrap">
@@ -551,6 +582,62 @@
   renderCityButtons();
   renderFilters(); applyFilter(); renderList(); updateCount();
   setInterval(()=>{ places.forEach(refreshMarker); applyFilter(); renderList(); }, 60000);
+
+  const FX_CACHE_KEY='eur-gbp-usd-rates';
+  let fxGbpRate=null, fxUsdRate=null, fxDate=null;
+  const fxToggle=document.getElementById('fxtoggle'), fxPanel=document.getElementById('fxpanel'),
+    fxEur=document.getElementById('fxEur'), fxGbp=document.getElementById('fxGbp'), fxUsd=document.getElementById('fxUsd'), fxStatus=document.getElementById('fxstatus');
+  function renderFxStatus(msg){
+    if(msg){ fxStatus.textContent=msg; return; }
+    fxStatus.textContent = fxGbpRate!=null ? `1 EUR = ${fxGbpRate.toFixed(4)} GBP = ${fxUsdRate.toFixed(4)} USD · rate as of ${fxDate}` : 'Rate unavailable — check your connection.';
+  }
+  function loadFxRate(){
+    try{
+      const cached=JSON.parse(localStorage.getItem(FX_CACHE_KEY)||'null');
+      if(cached){ fxGbpRate=cached.gbp; fxUsdRate=cached.usd; fxDate=cached.date; renderFxStatus(); }
+    }catch(e){}
+    fetch('https://api.frankfurter.dev/v1/latest?from=EUR&to=GBP,USD')
+      .then(r=>r.json())
+      .then(data=>{
+        fxGbpRate=data.rates.GBP; fxUsdRate=data.rates.USD; fxDate=data.date;
+        try{ localStorage.setItem(FX_CACHE_KEY, JSON.stringify({gbp:fxGbpRate, usd:fxUsdRate, date:fxDate})); }catch(e){}
+        renderFxStatus();
+      })
+      .catch(()=>{ renderFxStatus(fxGbpRate==null ? 'Rate unavailable — check your connection.' : null); });
+  }
+  fxToggle.onclick=()=>{
+    const open = fxPanel.style.display==='none';
+    fxPanel.style.display = open ? 'block' : 'none';
+    fxToggle.classList.toggle('on', open);
+    if(open && fxGbpRate==null) loadFxRate();
+  };
+  function setFromEur(eur){
+    fxGbp.value = (eur*fxGbpRate).toFixed(2);
+    fxUsd.value = (eur*fxUsdRate).toFixed(2);
+  }
+  fxEur.oninput=()=>{
+    if(fxGbpRate==null) return;
+    const v=parseFloat(fxEur.value);
+    if(isNaN(v)){ fxGbp.value=''; fxUsd.value=''; return; }
+    setFromEur(v);
+  };
+  fxGbp.oninput=()=>{
+    if(fxGbpRate==null) return;
+    const v=parseFloat(fxGbp.value);
+    if(isNaN(v)){ fxEur.value=''; fxUsd.value=''; return; }
+    const eur=v/fxGbpRate;
+    fxEur.value=eur.toFixed(2);
+    fxUsd.value=(eur*fxUsdRate).toFixed(2);
+  };
+  fxUsd.oninput=()=>{
+    if(fxGbpRate==null) return;
+    const v=parseFloat(fxUsd.value);
+    if(isNaN(v)){ fxEur.value=''; fxGbp.value=''; return; }
+    const eur=v/fxUsdRate;
+    fxEur.value=eur.toFixed(2);
+    fxGbp.value=(eur*fxGbpRate).toFixed(2);
+  };
+  loadFxRate();
 })();
 </script>
 </body>
