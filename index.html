@@ -105,6 +105,20 @@
   .leaflet-popup-content{font-family:var(--font-sans);}
   .leaflet-popup-content-wrapper, .leaflet-popup-tip{background:var(--surface-2); color:var(--text-primary);}
   .leaflet-popup-close-button{color:var(--text-muted) !important;}
+  .tt-loading{font-size:11px; color:var(--text-muted); margin:6px 0;}
+  .tt-block{margin:8px 0;}
+  .tt-thumbwrap{position:relative; width:120px; border-radius:8px; overflow:hidden; cursor:pointer; background:var(--surface-1);}
+  .tt-thumb{width:100%; aspect-ratio:9/16; object-fit:cover; display:block;}
+  .tt-playbtn{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.28); color:#fff; font-size:26px;}
+  .tt-caption{font-size:11px; color:var(--text-muted); margin-top:5px; line-height:1.4; max-width:220px;}
+  .tt-modal{position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; padding:20px;}
+  .tt-modal-backdrop{position:absolute; inset:0; background:rgba(0,0,0,0.78);}
+  .tt-modal-content{position:relative; max-width:100%; max-height:90vh; overflow:auto; background:var(--surface-1);
+    border:1px solid var(--border-strong); border-radius:12px; padding:40px 4px 4px;}
+  .tt-modal-close{position:absolute; top:6px; right:6px; width:34px; height:34px; border-radius:50%; background:var(--surface-2);
+    border:0.5px solid var(--border-strong); color:var(--text-secondary); display:flex; align-items:center; justify-content:center;
+    cursor:pointer; z-index:1; -webkit-tap-highlight-color:transparent;}
+  #ttmodalbody{min-width:280px;}
 </style>
 </head>
 <body>
@@ -173,6 +187,14 @@
   <div id="locatestatus" style="display:none;"></div>
 
   <div id="list"></div>
+</div>
+
+<div id="ttmodal" class="tt-modal" style="display:none;">
+  <div class="tt-modal-backdrop"></div>
+  <div class="tt-modal-content">
+    <button id="ttmodalclose" class="tt-modal-close" title="Close"><i class="ti ti-x"></i></button>
+    <div id="ttmodalbody"></div>
+  </div>
 </div>
 
 <script>
@@ -405,10 +427,61 @@
         <div style="width:2px; height:8px; background:${hex};"></div>
       </div>`});
   }
+  const tiktokOembedCache={};
+  function fetchTiktokOembed(url){
+    if(tiktokOembedCache[url]) return Promise.resolve(tiktokOembedCache[url]);
+    return fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`)
+      .then(r=>{ if(!r.ok) throw new Error('oembed failed'); return r.json(); })
+      .then(data=>{ tiktokOembedCache[url]=data; return data; });
+  }
+  const ttModal=document.getElementById('ttmodal'), ttModalBody=document.getElementById('ttmodalbody');
+  function closeTtModal(){ ttModal.style.display='none'; ttModalBody.innerHTML=''; }
+  document.getElementById('ttmodalclose').onclick=closeTtModal;
+  ttModal.querySelector('.tt-modal-backdrop').onclick=closeTtModal;
+  function openTiktokModal(data){
+    ttModalBody.innerHTML=data.html;
+    const script=document.createElement('script');
+    script.src='https://www.tiktok.com/embed.js';
+    script.async=true;
+    document.body.appendChild(script);
+    ttModal.style.display='flex';
+  }
+  function buildTiktokPreview(data){
+    const wrap=document.createElement('div'); wrap.className='tt-block';
+    const thumbWrap=document.createElement('div'); thumbWrap.className='tt-thumbwrap';
+    const img=document.createElement('img'); img.className='tt-thumb'; img.src=data.thumbnail_url; img.alt='';
+    const playBtn=document.createElement('div'); playBtn.className='tt-playbtn'; playBtn.innerHTML='<i class="ti ti-player-play"></i>';
+    thumbWrap.appendChild(img); thumbWrap.appendChild(playBtn);
+    thumbWrap.onclick=()=>openTiktokModal(data);
+    const caption=document.createElement('div'); caption.className='tt-caption';
+    const rawTitle=(data.title||'').split('\n')[0];
+    const shortTitle=rawTitle.length>110 ? rawTitle.slice(0,110)+'…' : rawTitle;
+    caption.textContent=shortTitle+(data.author_unique_id?` — @${data.author_unique_id}`:'');
+    wrap.appendChild(thumbWrap); wrap.appendChild(caption);
+    return wrap;
+  }
+  let currentPopup=null;
+  map.on('popupclose', ()=>{ currentPopup=null; });
   function onMarkerClick(p){
-    L.popup({closeButton:true, maxWidth:240}).setLatLng([p.lat,p.lng])
-      .setContent(`<div style="font-size:13px;">${p.img?`<img class="popup-photo" src="${commonsUrl(p.img.file,300)}" alt="" loading="lazy" title="${p.img.credit}" onerror="this.remove()">`:''}<div style="font-weight:500; margin-bottom:4px; color:var(--text-primary); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${p.n}${badgeHtml(p)}</div><div style="color:var(--text-secondary); line-height:1.5;">${p.d}</div><div style="display:flex; gap:14px; margin-top:6px;">${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-external-link" style="font-size:12px;"></i>Website</a>`:''}<a href="${directionsUrl(p)}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-directions" style="font-size:12px;"></i>Directions</a>${p.tiktok?`<a href="${p.tiktok}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-brand-tiktok" style="font-size:12px;"></i>TikTok</a>`:''}</div></div>`)
+    const popup=L.popup({closeButton:true, maxWidth:260}).setLatLng([p.lat,p.lng])
+      .setContent(`<div style="font-size:13px;">${p.img?`<img class="popup-photo" src="${commonsUrl(p.img.file,300)}" alt="" loading="lazy" title="${p.img.credit}" onerror="this.remove()">`:''}<div style="font-weight:500; margin-bottom:4px; color:var(--text-primary); display:flex; align-items:center; gap:6px; flex-wrap:wrap;">${p.n}${badgeHtml(p)}</div><div style="color:var(--text-secondary); line-height:1.5;">${p.d}</div><div id="ttpreview">${p.tiktok?'<div class="tt-loading">Loading TikTok preview…</div>':''}</div><div style="display:flex; gap:14px; margin-top:6px;">${p.url?`<a href="${p.url}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-external-link" style="font-size:12px;"></i>Website</a>`:''}<a href="${directionsUrl(p)}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-directions" style="font-size:12px;"></i>Directions</a>${p.tiktok?`<a href="${p.tiktok}" target="_blank" rel="noopener" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--pub-green-light); text-decoration:none; border-bottom:1px solid var(--border-strong);"><i class="ti ti-brand-tiktok" style="font-size:12px;"></i>TikTok</a>`:''}</div></div>`)
       .openOn(map);
+    currentPopup=popup;
+    if(p.tiktok){
+      fetchTiktokOembed(p.tiktok).then(data=>{
+        if(currentPopup!==popup) return;
+        const el=popup.getElement(), slot=el && el.querySelector('#ttpreview');
+        if(!slot) return;
+        slot.innerHTML='';
+        slot.appendChild(buildTiktokPreview(data));
+        if(popup._updateLayout) popup._updateLayout();
+        if(popup._updatePosition) popup._updatePosition();
+      }).catch(()=>{
+        if(currentPopup!==popup) return;
+        const el=popup.getElement(), slot=el && el.querySelector('#ttpreview');
+        if(slot) slot.innerHTML='';
+      });
+    }
   }
   function addMarkersForCity(){
     places.forEach(p=>{
