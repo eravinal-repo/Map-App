@@ -11,6 +11,7 @@
 <link rel="icon" href="apple-touch-icon.png">
 <title>Split the G — Dublin &amp; Belfast Trip Map</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://www.tiktok.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.44.0/tabler-icons.min.css" />
@@ -119,6 +120,7 @@
     border:0.5px solid var(--border-strong); color:var(--text-secondary); display:flex; align-items:center; justify-content:center;
     cursor:pointer; z-index:1; -webkit-tap-highlight-color:transparent;}
   #ttmodalbody{min-width:280px;}
+  .tt-modal-loading{font-size:12px; color:var(--text-muted); text-align:center; margin:0 0 8px; display:none;}
 </style>
 </head>
 <body>
@@ -193,6 +195,7 @@
   <div class="tt-modal-backdrop"></div>
   <div class="tt-modal-content">
     <button id="ttmodalclose" class="tt-modal-close" title="Close"><i class="ti ti-x"></i></button>
+    <div id="ttmodalloading" class="tt-modal-loading">Loading video…</div>
     <div id="ttmodalbody"></div>
   </div>
 </div>
@@ -434,17 +437,35 @@
       .then(r=>{ if(!r.ok) throw new Error('oembed failed'); return r.json(); })
       .then(data=>{ tiktokOembedCache[url]=data; return data; });
   }
-  const ttModal=document.getElementById('ttmodal'), ttModalBody=document.getElementById('ttmodalbody');
-  function closeTtModal(){ ttModal.style.display='none'; ttModalBody.innerHTML=''; }
+  const ttModal=document.getElementById('ttmodal'), ttModalBody=document.getElementById('ttmodalbody'), ttModalLoading=document.getElementById('ttmodalloading');
+  let ttHydrateObserver=null, ttHydrateTimeout=null;
+  function stopTtHydrateWatch(){
+    if(ttHydrateObserver){ ttHydrateObserver.disconnect(); ttHydrateObserver=null; }
+    if(ttHydrateTimeout){ clearTimeout(ttHydrateTimeout); ttHydrateTimeout=null; }
+    ttModalLoading.style.display='none';
+  }
+  function closeTtModal(){ ttModal.style.display='none'; ttModalBody.innerHTML=''; stopTtHydrateWatch(); }
   document.getElementById('ttmodalclose').onclick=closeTtModal;
   ttModal.querySelector('.tt-modal-backdrop').onclick=closeTtModal;
-  function openTiktokModal(data){
-    ttModalBody.innerHTML=data.html;
+  let ttEmbedScriptLoaded=false;
+  function ensureTiktokEmbedScript(){
+    if(ttEmbedScriptLoaded) return;
+    ttEmbedScriptLoaded=true;
     const script=document.createElement('script');
     script.src='https://www.tiktok.com/embed.js';
     script.async=true;
     document.body.appendChild(script);
+  }
+  function openTiktokModal(data){
+    ttModalBody.innerHTML=data.html;
+    ensureTiktokEmbedScript();
     ttModal.style.display='flex';
+    ttModalLoading.style.display='block';
+    ttHydrateObserver=new MutationObserver(()=>{
+      if(ttModalBody.querySelector('iframe')) stopTtHydrateWatch();
+    });
+    ttHydrateObserver.observe(ttModalBody, {childList:true, subtree:true});
+    ttHydrateTimeout=setTimeout(stopTtHydrateWatch, 8000);
   }
   function buildTiktokPreview(data){
     const wrap=document.createElement('div'); wrap.className='tt-block';
@@ -785,6 +806,7 @@
       .catch(()=>{});
   }
   loadWeather(currentCity);
+  ensureTiktokEmbedScript();
 })();
 </script>
 </body>
